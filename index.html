@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏁 Jakarta Rush Hour Race — Bike vs Car</title>
+  <link href="https://maps.grab.com/assets/css/maplibre-gl.css" rel="stylesheet">
+  <link href="https://maps.grab.com/assets/css/grabmaps.css" rel="stylesheet">
+  <link rel="preload" href="images/car.webm" as="video" type="video/webm">
+  <link rel="preload" href="images/bike.webm" as="video" type="video/webm">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Grab Community Solid';
+      src: url('fonts/grab_community_solid_en-Medium.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ── Duxton tokens (dark surface) ── */
+    :root {
+      --font-body: 'Inter', sans-serif;
+
+      /* text — dark mode */
+      --color-text-primary:   #ffffff;
+      --color-text-secondary: #bfbfbf;
+      --color-text-tertiary:  #a3a3a3;
+      --color-text-disabled:  #575757;
+
+      /* brand — Duxton palette */
+      --color-green:          #00b14f;   /* green-6 / colorPrimary */
+      --color-green-dark:     #00804a;   /* green-7 */
+      --color-red:            #d42e1c;   /* colorError */
+      --color-red-light:      #f24d3d;   /* red scale lighter */
+      --color-yellow:         #f09800;   /* colorWarning */
+      --color-orange:         #f76708;   /* orange brand */
+      --color-blue:           #136fd8;   /* colorInfo */
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+      background: #1a1a1a; overflow: hidden; height: 100vh;
+    }
+
+    /* ── Main pane (full screen, chase cam) ── */
+    #main-pane { position: relative; width: 100vw; height: 100vh; }
+    #map { width: 100%; height: 100%; }
+
+    /* ── Minimap pane (floating square, bottom-left) ── */
+    #minimap-pane {
+      position: absolute; bottom: 48px; left: 16px;
+      width: 240px; height: 240px;
+      border-radius: 14px; overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow: 0 2px 12px 0 rgba(28,28,28,0.10); /* boxShadowCard */
+      z-index: 100;
+    }
+    #minimap { width: 100%; height: 100%; }
+    #minimap-badge {
+      position: absolute; top: 8px; left: 8px; z-index: 10;
+      background: rgba(26,26,26,0.88); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+      padding: 3px 8px; font-family: var(--font-body); font-size: 10px; font-weight: 600;
+      color: var(--color-text-disabled); text-transform: uppercase; letter-spacing: 0.8px;
+    }
+
+    /* ── HUD ── */
+    #hud {
+      position: absolute; top: 16px; left: 16px; width: 272px;
+      background: rgba(26,26,26,0.92); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+      padding: 12px 16px; color: var(--color-text-primary); z-index: 100;
+      box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12);
+    }
+    #hud h1 { font-family: 'Grab Community Solid', var(--font-body); font-size: 14px; font-weight: 500; line-height: 1.4286; letter-spacing: -0.3px; margin-bottom: 2px; color: var(--color-text-primary); }
+    #hud .subtitle { font-size: 10px; font-weight: 400; color: var(--color-text-tertiary); margin-bottom: 0; text-transform: uppercase; letter-spacing: 0.6px; }
+    .vehicle-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+    .vehicle-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--color-text-primary); }
+    .vehicle-name { display: flex; align-items: center; gap: 6px; }
+    .dist-label { font-size: 10px; font-weight: 400; color: var(--color-text-tertiary); }
+    .vehicle-eta { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 400; color: var(--color-text-secondary); }
+    .vehicle-arrived { color: var(--color-yellow); font-size: 11px; font-weight: 700; }
+    .progress-track { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; width: 0%; transition: width 0.1s linear; }
+    .place-label { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); }
+    .place-label.first { color: var(--color-yellow); }
+    .place-detail { font-size: 10px; font-weight: 400; color: var(--color-text-tertiary); margin-top: 1px; }
+    .vehicle-row.finished .progress-track { display: none; }
+    .vehicle-row.finished .vehicle-swatch { display: none; }
+    #moto-fill { background: linear-gradient(90deg, var(--color-green), var(--color-green-dark)); }
+    #car-fill  { background: linear-gradient(90deg, var(--color-red), var(--color-red-light)); }
+    #race-timer { text-align: center; font-size: 24px; font-weight: 700; line-height: 1.3334; font-variant-numeric: tabular-nums; letter-spacing: -1px; color: var(--color-text-primary); margin-top: 4px; }
+    #winner-banner {
+      display: none; margin-top: 8px; padding: 8px 10px;
+      background: rgba(0,177,79,0.15);
+      border: 1px solid rgba(0,177,79,0.35); border-radius: 12px; text-align: center;
+    }
+    #winner-banner.car-win {
+      background: rgba(212,46,28,0.15);
+      border-color: rgba(212,46,28,0.35);
+    }
+    #winner-title { font-size: 12px; font-weight: 700; color: var(--color-green); }
+    #winner-banner.car-win #winner-title { color: var(--color-red-light); }
+    #winner-detail { font-size: 10px; font-weight: 400; color: var(--color-text-secondary); margin-top: 2px; }
+
+    /* ── Legend ── */
+    #legend {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(26,26,26,0.92); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+      padding: 10px 14px; z-index: 100; color: var(--color-text-primary); font-size: 12px;
+    }
+    #legend h3 { font-size: 10px; font-weight: 600; color: var(--color-text-tertiary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .legend-line { width: 20px; height: 4px; border-radius: 2px; }
+    .legend-line.moto { background: var(--color-green); }
+    .legend-line.car  { background: var(--color-red); }
+    .legend-stat { font-size: 10px; font-weight: 400; color: var(--color-text-secondary); margin-left: auto; }
+
+    /* ── Sound toggle ── */
+    #btn-sound {
+      position: absolute; top: 14px; right: 14px; z-index: 101;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: #ffffff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transition: transform 0.15s, box-shadow 0.15s;
+      color: #1a1a1a;
+    }
+    #btn-sound:hover { transform: scale(1.07); box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+    #btn-sound:active { transform: scale(0.96); }
+
+    /* ── HUD collapse toggle ── */
+    #hud-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    #hud-toggle {
+      background: none; border: none; cursor: pointer; padding: 2px 0 2px 4px;
+      color: var(--color-text-disabled); line-height: 1; font-size: 14px; flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+    #hud.collapsed #hud-toggle { transform: rotate(-90deg); }
+    #hud-body { overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease; max-height: 600px; opacity: 1; padding-top: 12px; }
+    #hud.collapsed #hud-body { max-height: 0; opacity: 0; }
+
+    /* ── Traffic legend (inside HUD, visible when expanded) ── */
+    #traffic-legend {
+      margin-top: 10px;
+      padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);
+      color: var(--color-text-primary);
+    }
+    #traffic-legend h4 { font-size: 10px; font-weight: 600; color: var(--color-text-tertiary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    #traffic-gradient {
+      height: 7px; border-radius: 99px;
+      background: linear-gradient(to right, var(--color-green), var(--color-yellow), var(--color-orange), var(--color-red));
+      margin-bottom: 4px;
+    }
+    #traffic-gradient-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 400; color: var(--color-text-tertiary); }
+
+    /* ── How it was made card ── */
+    #how-card {
+      display: none;
+      position: absolute; bottom: 72px; left: 50%;
+      transform: translateX(-50%) translateY(140px);
+      opacity: 0;
+      z-index: 100; width: 303px; max-width: calc(100vw - 32px);
+      transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    }
+    #how-card.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    #how-card a {
+      display: flex; align-items: center; gap: 12px;
+      background: #eefbfb; border-radius: 16px;
+      padding: 14px 16px 14px 14px;
+      text-decoration: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    #how-card a:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.14); transform: translateY(-1px); }
+    #how-card a:active { transform: translateY(0); }
+    #how-card-text { flex: 1; }
+    #how-card-text strong { display: block; font-size: 14px; font-weight: 600; color: #1a1a1a; line-height: 1.4; }
+    #how-card-text span { display: block; font-size: 12px; font-weight: 400; color: #707070; margin-top: 1px; }
+
+    /* ── Controls ── */
+    #controls {
+      position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; z-index: 100;
+    }
+    .btn {
+      padding: 9px 16px; border: none; border-radius: 99px;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600; line-height: 1.4286;
+      cursor: pointer; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    #btn-primary { background: var(--color-green); color: #ffffff; box-shadow: 0 4px 16px rgba(0,177,79,0.35); }
+    #btn-primary.racing { background: rgba(26,26,26,0.95); color: var(--color-text-secondary); border: 1px solid rgba(255,255,255,0.12); box-shadow: none; }
+    /* ── Follow segmented control ── */
+    #follow-seg {
+      display: flex; align-items: center;
+      background: rgba(26,26,26,0.95); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 99px; padding: 3px; gap: 2px;
+    }
+    .seg-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border: none; border-radius: 99px;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600; line-height: 1.4286;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      background: transparent; color: var(--color-text-secondary);
+    }
+    .seg-btn:hover { color: var(--color-text-primary); }
+    .seg-btn.active {
+      background: #ffffff; color: #3d3d3d;
+      box-shadow: 0 1px 4px 0 rgba(0,0,0,0.18);
+    }
+    .seg-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+
+    /* ── Markers — styled as Duxton tag ── */
+    .pin-marker {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #1a1a1a; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 40px; /* borderRadiusXXL */
+      padding: 2px 8px; /* paddingXS horizontal */
+      font-family: var(--font-body); font-size: 12px; font-weight: 400; line-height: 1.6667;
+      color: var(--color-text-primary); white-space: nowrap; pointer-events: none;
+      box-shadow: 0 2px 12px 0 rgba(28,28,28,0.10);
+    }
+    .mini-vehicle { width: 32px; height: 32px; object-fit: contain; pointer-events: none; user-select: none; display: block; }
+    .vehicle-marker video { width: 96px; height: 96px; object-fit: contain; pointer-events: none; user-select: none; display: block; }
+
+    /* ── Intro overlay ── */
+    #intro-overlay {
+      position: absolute; inset: 0; z-index: 200;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      overflow: hidden;
+    }
+    #intro-overlay.hidden { display: none; }
+    #intro-bg {
+      position: absolute; inset: 0;
+      background-image: url('images/cover.png');
+      background-size: cover; background-position: center center;
+    }
+    #intro-fade {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(30,20,0,0.18) 0%, rgba(30,20,0,0) 45%);
+    }
+    #intro-fade-yellow {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, #f09800 0%, #f09800 18%, rgba(240,152,0,0.85) 45%, rgba(240,152,0,0) 72%);
+      mix-blend-mode: multiply;
+    }
+    #intro-content {
+      position: relative; z-index: 1;
+      padding: 0 32px 48px;
+    }
+    #intro-content h2 {
+      font-family: 'Grab Community Solid', var(--font-body);
+      font-size: 28px; font-weight: 500; line-height: 1.2;
+      color: var(--color-text-primary); margin-bottom: 8px;
+    }
+    #intro-content p {
+      font-size: 14px; font-weight: 400; line-height: 1.5;
+      color: #ffffff; margin-bottom: 24px; max-width: 420px;
+    }
+    #btn-start-intro {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; border: none; border-radius: 99px;
+      background: var(--color-green); color: #ffffff;
+      font-family: var(--font-body); font-size: 16px; font-weight: 600;
+      cursor: pointer; box-shadow: 0 4px 16px rgba(0,177,79,0.4);
+      transition: transform 0.15s;
+    }
+    #btn-start-intro:hover { transform: translateY(-1px); }
+    #btn-start-intro:active { transform: translateY(0); }
+
+    /* ── Countdown overlay ── */
+    #countdown-overlay {
+      position: absolute; inset: 0; z-index: 199;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #countdown-overlay.hidden { display: none; }
+    #countdown-number {
+      font-family: 'Grab Community Solid', var(--font-body);
+      font-size: 160px; font-weight: 500; line-height: 1;
+      color: #ffffff;
+      text-shadow: 0 4px 32px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: scale(1.4);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    #countdown-number.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ── Bottom fade overlay ── */
+    #bottom-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+      background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+      z-index: 1; pointer-events: none;
+    }
+
+    /* ── Suppress attribution inside minimap ── */
+    #minimap-pane .maplibregl-ctrl-attrib,
+    #minimap-pane .maplibregl-ctrl-bottom-left,
+    #minimap-pane .maplibregl-ctrl-bottom-right { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- Full screen chase cam with floating minimap overlay -->
+<div id="main-pane">
+
+  <!-- Intro overlay -->
+  <div id="intro-overlay">
+    <div id="intro-bg"></div>
+    <div id="intro-fade"></div>
+    <div id="intro-fade-yellow"></div>
+    <div id="intro-content">
+      <h2>Jakarta Rush Hour Race</h2>
+      <p>GrabMaps knows every alleyway. Built from billions of trips by millions of delivery-partners across SEA, our routing sends bikes through shortcuts no other map knows exist — watch the difference in real time.</p>
+      <button id="btn-start-intro" onclick="dismissIntro()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" focusable="false"><path d="M9.59 3.06456C7.59185 1.81572 5 3.25225 5 5.60856V18.3916C5 20.7479 7.59185 22.1844 9.59 20.9356L19.8164 14.5441C21.6964 13.3691 21.6964 10.6311 19.8164 9.45607L9.59 3.06456Z"/></svg>
+        Start race
+      </button>
+    </div>
+  </div>
+
+  <!-- Countdown overlay -->
+  <div id="countdown-overlay" class="hidden">
+    <div id="countdown-number"></div>
+  </div>
+
+  <!-- Floating minimap: bottom-left -->
+  <div id="minimap-pane">
+    <div id="minimap"></div>
+  </div>
+  <div id="hud">
+    <div id="hud-header">
+      <div>
+        <h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:6px"><path d="M11.5691 4.02994C7.01528 6.30683 5.35101 5.77244 4.72656 5.18401L6.38379 16.4964C7.68418 17.2268 9.20763 18.3379 14.1527 15.7872C17.7099 13.9525 19.6944 14.2146 22.0159 14.4393L20.0019 2.84226C17.6724 2.41986 15.2436 2.1927 11.5691 4.02994Z" fill="#E8FCCF"/><path d="M16.986 14.6432L14.6045 2.87489C16.7098 2.34868 18.3799 2.54814 20.0019 2.84226L22.0159 14.4393C21.9455 14.4325 21.8755 14.4256 21.8057 14.4188C20.2649 14.2683 18.849 14.1299 16.986 14.6432Z" fill="#005339"/><path d="M11.9048 16.7931L9.54866 4.9375C6.49602 6.12968 5.24832 5.67568 4.72656 5.18401L6.38379 16.4964C6.43998 16.528 6.49659 16.5603 6.55388 16.593C7.59609 17.1872 8.86161 17.9086 11.9048 16.7931Z" fill="#005339"/><path d="M20.6279 6.44644C17.6354 6.01298 14.966 6.44798 12.7749 7.57021C10.906 8.52738 7.64728 9.85747 5.32373 9.25995L5.87433 13.0184C8.16142 13.6497 10.3789 13.4457 14.0743 11.7121C16.5688 10.5418 19.3508 10.2868 21.3082 10.364L20.6279 6.44644Z" fill="#005339"/><path d="M20.6279 6.44644C18.7298 6.1715 16.9616 6.24597 15.363 6.6236L16.2337 10.9258C18.0758 10.4242 19.9042 10.3087 21.3082 10.364L20.6279 6.44644Z" fill="#E8FCCF"/><path d="M5.87433 13.0184C7.48054 13.4617 9.0524 13.4931 11.126 12.872L10.2879 8.65483C8.65313 9.24124 6.79974 9.63951 5.32373 9.25995L5.87433 13.0184Z" fill="#E8FCCF"/><path d="M3.8001 5.7999C4.73898 5.7999 5.5001 5.03879 5.5001 4.0999C5.5001 3.16102 4.73898 2.3999 3.8001 2.3999C2.86121 2.3999 2.1001 3.16102 2.1001 4.0999C2.1001 5.03879 2.86121 5.7999 3.8001 5.7999Z" fill="#00BD4C"/><path d="M6.90029 21.7999C6.40029 21.8999 5.80029 21.4999 5.70029 20.9999L3.00029 5.59991C2.90029 5.09991 3.30029 4.59991 3.80029 4.49991C4.40029 4.39991 4.90029 4.69991 5.00029 5.29991L7.70029 20.6999C7.80029 21.1999 7.40029 21.6999 6.90029 21.7999Z" fill="#008244"/></svg>Jakarta Rush Hour Race</h1>
+        <div class="subtitle">Monas → Senayan / GBK</div>
+      </div>
+      <button id="hud-toggle" onclick="toggleHud()"><svg id="hud-chevron-down" viewBox="0 0 24 24" width="16" height="16" focusable="false" fill="currentColor"><path clip-rule="evenodd" d="M18.7071 8.29289C18.3166 7.90237 17.6834 7.90237 17.2929 8.29289L12.1414 13.4444C12.0633 13.5225 11.9367 13.5225 11.8586 13.4444L6.70711 8.29289C6.31658 7.90237 5.68342 7.90237 5.29289 8.29289C4.90237 8.68342 4.90237 9.31658 5.29289 9.70711L11.2929 15.7071C11.6834 16.0976 12.3166 16.0976 12.7071 15.7071L18.7071 9.70711C19.0976 9.31658 19.0976 8.68342 18.7071 8.29289Z" fill-rule="evenodd"/></svg><svg id="hud-chevron-up" viewBox="0 0 24 24" width="16" height="16" focusable="false" fill="currentColor" style="display:none"><path clip-rule="evenodd" d="M18.7071 15.7071C18.3166 16.0976 17.6834 16.0976 17.2929 15.7071L12.1414 10.5556C12.0633 10.4775 11.9367 10.4775 11.8586 10.5556L6.70711 15.7071C6.31658 16.0976 5.68342 16.0976 5.29289 15.7071C4.90237 15.3166 4.90237 14.6834 5.29289 14.2929L11.2929 8.29289C11.6834 7.90237 12.3166 7.90237 12.7071 8.29289L18.7071 14.2929C19.0976 14.6834 19.0976 15.3166 18.7071 15.7071Z" fill-rule="evenodd"/></svg></button>
+    </div>
+    <div id="hud-body">
+      <div class="vehicle-row" id="moto-row">
+        <div class="vehicle-header">
+          <div class="vehicle-name"><span>Motorbike</span> <span class="dist-label">10.4 km</span></div>
+          <div id="moto-status" class="vehicle-eta">22m 36s</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="moto-fill"></div></div>
+      </div>
+      <div class="vehicle-row" id="car-row">
+        <div class="vehicle-header">
+          <div class="vehicle-name"><span>Car</span> <span class="dist-label">10.9 km</span></div>
+          <div id="car-status" class="vehicle-eta">31m 06s</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="car-fill"></div></div>
+      </div>
+      <div id="race-timer">00:00</div>
+
+      <div id="traffic-legend">
+<div id="traffic-gradient"></div>
+        <div id="traffic-gradient-labels"><span>Clear roads</span><span>Standstill</span></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="btn-sound" onclick="toggleSound()" title="Toggle sound">
+    <svg id="sound-icon-off" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" focusable="false">
+      <path d="M2 12C2 9.52308 3.31561 7.23256 5.45512 5.98452L11.9698 2.1843C12.8698 1.65931 14 2.30848 14 3.3504V20.6496C14 21.6915 12.8698 22.3407 11.9698 21.8157L5.45511 18.0155C3.3156 16.7674 2 14.4769 2 12Z"/>
+      <path clip-rule="evenodd" d="M16.4453 8.16795C16.9048 7.8616 17.5257 7.98577 17.8321 8.4453L21.8321 14.4453C22.1384 14.9048 22.0142 15.5257 21.5547 15.8321C21.0952 16.1384 20.4743 16.0142 20.1679 15.5547L16.1679 9.5547C15.8616 9.09517 15.9858 8.4743 16.4453 8.16795Z" fill-rule="evenodd"/>
+      <path clip-rule="evenodd" d="M21.5547 8.16795C21.0952 7.8616 20.4743 7.98577 20.1679 8.4453L16.1679 14.4453C15.8616 14.9048 15.9858 15.5257 16.4453 15.8321C16.9048 16.1384 17.5257 16.0142 17.8321 15.5547L21.8321 9.5547C22.1384 9.09517 22.0142 8.4743 21.5547 8.16795Z" fill-rule="evenodd"/>
+    </svg>
+    <svg id="sound-icon-on" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" focusable="false" style="display:none">
+      <path d="M5.45512 5.98452C3.31561 7.23256 2 9.52308 2 12C2 14.4769 3.3156 16.7674 5.45511 18.0155L11.9698 21.8157C12.8698 22.3407 14 21.6915 14 20.6496V3.3504C14 2.30848 12.8698 1.65931 11.9698 2.1843L5.45512 5.98452Z"/>
+      <path d="M17.2723 4.69766C16.6486 4.41775 16 4.91795 16 5.60157C16 6.04495 16.284 6.43224 16.6806 6.63059C18.6487 7.61503 20 9.6497 20 12C20 14.3503 18.6487 16.3849 16.6806 17.3694C16.284 17.5677 16 17.955 16 18.3984C16 19.082 16.6486 19.5822 17.2723 19.3023C20.0591 18.0516 22 15.2525 22 12C22 8.74752 20.0591 5.94838 17.2723 4.69766Z"/>
+      <path d="M16.6978 14.9533C16.4136 15.2131 16 14.9831 16 14.598V9.40199C16 9.0169 16.4136 8.78688 16.6978 9.04668C17.498 9.77809 18 10.8304 18 12C18 13.1696 17.498 14.2219 16.6978 14.9533Z"/>
+    </svg>
+  </button>
+
+  <audio id="audio-intro" src="audio/race-intro.m4a" loop></audio>
+  <audio id="audio-race" src="audio/race-start.m4a"></audio>
+
+  <div id="map">
+    <div id="bottom-overlay"></div>
+  </div>
+
+  <div id="how-card">
+    <a href="https://maps.grab.com/developer" target="_blank" rel="noopener">
+      <img src="images/pin-and-map.png" width="48" height="48" style="flex-shrink:0;object-fit:contain;" alt="">
+      <div id="how-card-text">
+        <strong>How was this made?</strong>
+        <span>Learn more</span>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#707070" focusable="false" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><path clip-rule="evenodd" d="M8.29289 18.7071C7.90237 18.3166 7.90237 17.6834 8.29289 17.2929L13.4444 12.1414C13.5225 12.0633 13.5225 11.9367 13.4444 11.8586L8.29289 6.70711C7.90237 6.31658 7.90237 5.68342 8.29289 5.29289C8.68342 4.90237 9.31658 4.90237 9.70711 5.29289L15.7071 11.2929C16.0976 11.6834 16.0976 12.3166 15.7071 12.7071L9.70711 18.7071C9.31658 19.0976 8.68342 19.0976 8.29289 18.7071Z" fill-rule="evenodd"/></svg>
+    </a>
+  </div>
+
+  <div id="controls">
+    <button class="btn racing" id="btn-primary"><svg id="btn-primary-icon" viewBox="0 0 24 24" width="14" height="14" focusable="false" fill="currentColor" style="vertical-align:-1px;margin-right:6px"><path d="M11.9696 2C17.0659 2 21.3612 5.82767 21.9922 10.876C22.0607 11.424 21.672 11.9238 21.124 11.9923C20.576 12.0608 20.0762 11.6721 20.0077 11.124C19.5007 7.06793 16.0486 4 11.9696 4C9.23773 4 6.70612 5.43337 5.30057 7.77597L5.16614 8L7.99994 8C8.55222 8 8.99994 8.44772 8.99994 9C8.99994 9.55229 8.55222 10 7.99994 10H2.99994C2.73472 10 2.48037 9.89464 2.29283 9.70711C2.10529 9.51957 1.99994 9.26522 1.99994 9V4C1.99994 3.44772 2.44765 3 2.99994 3C3.55222 3 3.99994 3.44772 3.99994 4V6.11322C5.82423 3.54554 8.78894 2 11.9696 2Z"/><path d="M12.0303 22C6.93399 22 2.63874 18.1723 2.00771 13.124C1.9392 12.576 2.32793 12.0762 2.87595 12.0077C3.42397 11.9392 3.92376 12.3279 3.99226 12.876C4.49927 16.9321 7.95135 20 12.0303 20C14.7622 20 17.2938 18.5666 18.6994 16.224L18.8338 16H15.9999C15.4477 16 14.9999 15.5523 14.9999 15C14.9999 14.4477 15.4477 14 15.9999 14H20.9999C21.2652 14 21.5195 14.1054 21.707 14.2929C21.8946 14.4804 21.9999 14.7348 21.9999 15V20C21.9999 20.5523 21.5522 21 20.9999 21C20.4477 21 19.9999 20.5523 19.9999 20V17.8869C18.1756 20.4545 15.211 22 12.0303 22Z"/></svg><span id="btn-primary-label">Reset</span></button>
+    <div id="follow-seg">
+      <button class="seg-btn" id="seg-car" onclick="setFollowMode('car')"><svg viewBox="0 0 24 24" width="16" height="16" focusable="false" fill="currentColor"><path clip-rule="evenodd" d="M20.6255 7.58749C20.8241 8.05103 21.0017 8.52235 21.1579 9H22C22.5523 9 23 9.44771 23 10C23 10.5523 22.5523 11 22 11H21.6798C21.8922 12.079 22 13.1788 22 14.2841V19C22 20.1046 21.1046 21 20 21C18.8954 21 18 20.1046 18 19V18H6V19C6 20.1046 5.10457 21 4 21C2.89543 21 2 20.1046 2 19V14.2841C2 13.1788 2.10779 12.079 2.32024 11H2C1.44772 11 1 10.5523 1 10C1 9.44771 1.44772 9 2 9H2.84209C2.99829 8.52235 3.17588 8.05103 3.37453 7.5875L4.56136 4.81824C5.03409 3.71519 6.11871 3 7.31879 3H16.6812C17.8813 3 18.9659 3.71519 19.4386 4.81824L20.6255 7.58749ZM6.39965 5.60608C6.55723 5.2384 6.91877 5 7.31879 5H16.6812C17.0812 5 17.4428 5.2384 17.6004 5.60608L18.7872 8.37533C18.9263 8.70001 19.0537 9.02901 19.1693 9.36169C19.2791 9.67772 19.039 10 18.7045 10H5.29554C4.96099 10 4.72089 9.67772 4.83068 9.36169C4.94625 9.02901 5.07368 8.70001 5.21282 8.37533L6.39965 5.60608ZM4 13.5C4 12.6716 4.67157 12 5.5 12H6.5C7.32843 12 8 12.6716 8 13.5C8 14.3284 7.32843 15 6.5 15H5.5C4.67157 15 4 14.3284 4 13.5ZM17.5 12C16.6716 12 16 12.6716 16 13.5C16 14.3284 16.6716 15 17.5 15H18.5C19.3284 15 20 14.3284 20 13.5C20 12.6716 19.3284 12 18.5 12H17.5Z" fill-rule="evenodd"/></svg> Car</button>
+      <button class="seg-btn active" id="seg-moto" onclick="setFollowMode('moto')"><svg viewBox="0 0 24 24" width="16" height="16" focusable="false" fill="currentColor"><path clip-rule="evenodd" d="M11.475 12.715L14.7293 10.7624C15.4841 10.3095 15.8541 9.41635 15.6406 8.56237L14.6151 4.46028C14.5475 4.18977 14.3044 4 14.0256 4H13C12.4477 4 12 3.55228 12 3C12 2.44772 12.4477 2 13 2H17.5966C17.8375 2 18.0514 2.15415 18.1276 2.38268L18.7384 4.21507C18.8671 4.60122 18.5797 5 18.1726 5C17.4629 5 17.1547 5.89809 17.715 6.33385L23.1595 10.5685C23.7608 11.0362 23.4301 12 22.6684 12H22.0005C23.2147 12.9122 24 14.3644 24 16C24 18.7614 21.7614 21 19 21C16.3923 21 14.2508 19.0037 14.0205 16.4559C13.6585 16.7982 13.1728 17 12.6537 17H9.89998C9.43671 19.2822 7.41896 21 5 21C2.23858 21 0 18.7614 0 16C0 14.3069 0.84156 12.8103 2.12921 11.9058C1.6229 11.7445 1.19242 11.3848 0.94723 10.8944L0.223623 9.44721C-0.108827 8.78231 0.374669 8 1.11805 8H9.76395C10.8192 8 11.155 9.42252 10.2112 9.89443L10 10V13H10.446C10.8085 13 11.1642 12.9015 11.475 12.715ZM7.56665 14.446C7.04069 13.5792 6.08798 13 5 13C3.34315 13 2 14.3431 2 16C2 17.6569 3.34315 19 5 19C6.30622 19 7.41746 18.1652 7.82929 17H5C4.44772 17 4 16.5523 4 16C4 15.4477 4.44772 15 5 15H7.75348C7.7044 14.8092 7.64175 14.6242 7.56665 14.446ZM16 16C16 14.3431 17.3431 13 19 13C20.6569 13 22 14.3431 22 16C22 17.6569 20.6569 19 19 19C17.3431 19 16 17.6569 16 16Z" fill-rule="evenodd"/></svg> Bike</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://maps.grab.com/assets/js/maplibre-gl.js"></script>
+<script type="module">
+const MAPS_BASE = 'https://maps.grab.com';
+const BM_KEY    = 'bm_1772531561_2bE7dsQYB90EOMUryNexcenrh8AEY3M7';
+
+// Duxton brand colors (must be literals for MapLibre paint properties)
+const CLR_GREEN = '#00b14f';
+const CLR_RED   = '#d42e1c';
+
+// Pre-load vehicle videos immediately so they're buffered before the race starts
+const _makeVid = (src) => { const v = document.createElement('video'); v.src = src; v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true; return v; };
+const _vidCar  = _makeVid('images/car.webm');
+const _vidMoto = _makeVid('images/bike.webm');
+
+document.getElementById('btn-primary').addEventListener('click', () => {
+  resetRace();
+});
+
+const CAR_DURATION  = 1865.7;
+const MOTO_DURATION = 1355.5;
+const SPEEDUP = 45;
+
+const CAR_POLY  = '|p|wJgmkwjE|U\\EmI_IV}VjAqOlAuK~@iPxAe@As@IkDqA_G{BqFmCaCkAuBaAqEgBoFhA}KhC}GpAu@jDkC`JeA`Ee@tBuGbVwAfDmBnCwBbBaClAwCz@_CXcBDkEEcC]wRyCyQoCeDWoCG_CJmBb@gB|@yAxAsBhCkArBy@zBc@rBYbCQbDUt}@?zNAzJC~RAbBYzpAE~EGpdBDdL]hKwA`IqDvRSvDKjC]lIU`Dm@zKW|BSbCd@hZNnFx@jDhApAxBt@vC?fDe@`VgDxOsB`Hg@zAHdFHjKn@fHnAdHlAjF|@bB`@`MnCnPrEbBrBlJlC`Cv@hEnA|Bn@tRxFjGvBpItClDxAxL`FpHzCzAl@pGjCvEtBzBz@fS~HdEdBtBGn@Zx[nOhAxBtEbCbEtBdNfHtB`ApJdFdAj@rCvAfDdBpGdDrDlBnTtKrMjHjCvAbLxFfAh@hU|KhLhFtFpClCFb^xR`@P~^hQpAhCdHpDpCbBjM~HtVjLjKjE~DvArPrI`D~A`CpA`Af@TJ`DfBfCtAj@Xd@V|At@pDhBzEbCjAl@~EdCvCxApIhEtDlBdCnA`D~A~FxCnDhBpDhBlL~FdFhC^Pd@VhCpAtMxGxCzAbErBnCjA|DnBjDbDfCnBvDfDl@dAVnA@bBGvBOzBi@bCoAzBkB|AkCdBwCnAa_@vKe[|JaYtI}H`CgE~D}BxCiB|Ck@pDWlEVxBfMtPxAlBvAjBjKjNz@jAbA`CnB|Cxb@`g@tMnO~{@|nA`cAl|ArKbO`GtJnCnFtBzCjA`BnFhHbFnHpCpDrJjMnHpIhFhEdKjGpFjDbFlCfD|@fDd@|j@|G`Jl@dBXzAj@`B`BpAxAv@tAVbA`@lBRlGEvF@zi@l@x_@h@`XhAla@x@l\\l@`SJnDRxCt@vg@`@n`@p@hS~B|Pf@rEPnCDrE@jD?vAIxICzBBlOl@`TdBjr@l@vPD|BtAfIHlED|AHxCL|DZpNh@~LdAj_@|AdB`A`Bn@h@bAv@dAZ~AVlDGvDE|NIhEC|KIxHEtRUfHKnUa@rMQ`QIzDEfQYzCEpVSpFGjRObFGjBArDC`FMdEfAbCZzZk@lp@kDbXkC~b@uDdLKbEEj_@yGtf@aKv|@}Pb[mK|e@cP~KqDdo@eVpg@kRvUyI`E_Bp]eNbToIn\\gMfg@oR|i@sSbTeInLyFxRuKzRuK~\\iTlQ_O`QuNpQaObUcRzVwSnOiMtUcRpTwP`ImL|x@qv@bIgKfLqJdTuOtY{Oj@Y`l@qZvPqKdLwHjJaK`QyUjAeGEeDq@cCiA_B}Aq@{BWiCZ}BdAyBnBqAjCu@jCEjCDvCd@rDbO`m@nFdW~Mr{@rE~^pCtPxAbJzC|QtCpRtOzdAf@hDv@hFxAvJVhBpC~Q|Up|A~QllAzBfNlDtTd@tCdCrOfApCfBbClB~A`Bp@fCb@vBHlHJnP{@xLk@lD[xBKdc@_Bh^k@pNUlS]bOKpgBdBbHHhNd@lLi@rDFnQTbRBjCe@dBmA`B{BvBcEzDuMxEmP}DK}iAdCsITyEvBoIlC{^M{GI?aCvGFxIBBwKNgw@D_FVih@v@oA??';
+const MOTO_POLY = 'l{wwJa{iwjEwBbBaClAwCz@_CXcBDkEEcC]wRyCyQoCeDWoCG_CJmBb@gB|@yAxAsBhCkArBy@zBc@rBYbCQbDUt}@?zNAzJC~RAbBYzpAE~EGpdBDdL]hKwA`IqDvRSvDKjC]lIU`Dm@zKW|BSbCd@hZNnFx@jDhApAxBt@vC?fDe@`VgDxOsB`Hg@zAHdFHjKn@fHnAdHlAjF|@bB`@`MnCnPrEbBrBlJlC`Cv@hEnA|Bn@tRxFjGvBpItClDxAxL`FpHzCzAl@pGjCvEtBzBz@fS~HdEdBtBGn@Zx[nOhAxBtEbCbEtBdNfHtB`ApJdFdAj@rCvAfDdBpGdDrDlBnTtKrMjHjCvAbLxFfAh@hU|KhLhFtFpClCFb^xR`@P~^hQpAhCdHpDpCbBjM~HtVjLjKjE~DvArPrI`D~A`CpA`Af@TJ`DfBfCtAj@Xd@V|At@pDhBzEbCjAl@~EdCvCxApIhEtDlBdCnA`D~A~FxCnDhBpDhBlL~FdFhC^Pd@VhCpAtMxGxCzAbErBnCjA|DnBjDbDfCnBvDfDl@dAVnA@bBGvBOzBi@bCoAzBkB|AkCdBwCnAa_@vKe[|JaYtI}H`CgE~D}BxCiB|Ck@pDWlEVxBfMtPxAlBvAjBjKjNz@jAbA`CnB|Cxb@`g@tMnO~{@|nA`cAl|ArKbO`GtJnCnFtBzCjA`BnFhHbFnHpCpDrJjMnHpIhFhEdKjGpFjDbFlCfD|@fDd@|j@|G`Jl@dBXzAj@`B`BpAxAv@tAVbA`@lBRlGEvF@zi@l@x_@h@`XhAla@x@l\\l@`SJnDRxCt@vg@`@n`@p@hS~B|Pf@rEPnCDrE@jD?vAIxICzBBlOl@`TdBjr@l@vPD|BtAfIHlED|AHxCL|DZpNh@~LdAj_@|AdB`A`Bn@h@bAv@dAZ~AVlDGvDE|NIhEC|KIxHEtRUfHKnUa@rMQ`QIzDEfQYzCEpVSpFGjRObFGjBArDC`FM`T}AtRwArUcBxFc@zRoBdFi@zAM|BQvI{@d@A~Ks@b_@kExBW`AKzKyAnEu@`MmB`QuBz[eGvDu@`g@oLrNqEzV}HfBk@|McFnPaGl[yJ~Ao@lQyGtHuClJaE~EmB`A_@fIkDpTwIzOmGxKaEtEmBbC_AvDsAx@[vBy@dsAgg@z`@kO|Am@tTiJpQsIdUyL`B{@tO_InKoIbIqHxI_JxE{EtI{HhC_Cp[_VzFaE~BgBdDcB`GsDlGeEpXyTlQ_Nv`@iZnc@}`@fg@_`@fLqJdTuOtY{Oj@Y`l@qZvPqKdLwHjJaK`QyUjAeGEeDq@cCiA_B}Aq@{BWiCZ}BdAyBnBqAjCu@jCEjCDvCd@rDbO`m@nFdW~Mr{@rE~^pCtPxAbJzC|QtCpRtOzdAf@hDv@hFxAvJVhBpC~Q|Up|A~QllAzBfNlDtTd@tCdCrOfApCfBbClB~A`Bp@fCb@vBHlHJnP{@xLk@lD[xBKdc@_Bh^k@pNUlS]bOKpgBdBbHHhNd@lLi@rDFnQTbRBjCe@dBmA`B{BvBcEzDuMxEmP}DK}iAdCsITyEvBoIlC{^M{GI?aCvGFxIBBwKNgw@D_FVih@v@oA??';
+
+// ── Polyline6 decoder ──────────────────────────────────────────────────────
+function decodePolyline6(encoded) {
+  const coords = [];
+  let index = 0, lat = 0, lng = 0;
+  while (index < encoded.length) {
+    let b, shift = 0, result = 0;
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+    shift = 0; result = 0;
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+    coords.push([lng / 1e6, lat / 1e6]);
+  }
+  return coords;
+}
+
+function buildCumDist(coords) {
+  const d = [0];
+  for (let i = 1; i < coords.length; i++) {
+    const dx = coords[i][0]-coords[i-1][0], dy = coords[i][1]-coords[i-1][1];
+    d.push(d[d.length-1] + Math.sqrt(dx*dx+dy*dy));
+  }
+  return d;
+}
+function interpolate(coords, cum, progress) {
+  const total = cum[cum.length-1], target = Math.min(progress, 1) * total;
+  let lo = 0, hi = cum.length - 1;
+  while (lo < hi-1) { const mid = (lo+hi)>>1; if (cum[mid] <= target) lo=mid; else hi=mid; }
+  const seg = cum[hi]-cum[lo], t = seg > 0 ? (target-cum[lo])/seg : 0;
+  return [coords[lo][0]+t*(coords[hi][0]-coords[lo][0]), coords[lo][1]+t*(coords[hi][1]-coords[lo][1])];
+}
+function fmtTime(s) {
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+}
+function fmtDiff(s) {
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+function ptFeature(c)  { return { type:'Feature', geometry:{ type:'Point',      coordinates:c } }; }
+function lineFeature(c){ return { type:'Feature', geometry:{ type:'LineString', coordinates:c } }; }
+
+function bearingBetween(a, b) {
+  const dLng = (b[0] - a[0]) * Math.cos((a[1] + b[1]) * Math.PI / 360);
+  const dLat = b[1] - a[1];
+  return (Math.atan2(dLng, dLat) * 180 / Math.PI + 360) % 360;
+}
+function lerpAngle(a, b, t) {
+  const d = ((b - a + 540) % 360) - 180;
+  return (a + d * t + 360) % 360;
+}
+
+// ── Audio ─────────────────────────────────────────────────────────────────
+let soundOn = true;
+const audioIntro = document.getElementById('audio-intro');
+const audioRace  = document.getElementById('audio-race');
+
+function applyMute() {
+  audioIntro.muted = !soundOn;
+  audioRace.muted  = !soundOn;
+  document.getElementById('sound-icon-off').style.display = soundOn ? '' : 'none';
+  document.getElementById('sound-icon-on').style.display  = soundOn ? 'none' : '';
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  applyMute();
+}
+window.toggleSound = toggleSound;
+
+function playIntroMusic() {
+  audioRace.pause(); audioRace.currentTime = 0;
+  audioIntro.currentTime = 0;
+  audioIntro.play().catch(() => {});
+}
+function playRaceMusic() {
+  audioIntro.pause(); audioIntro.currentTime = 0;
+  audioRace.currentTime = 0;
+  audioRace.play().catch(() => {});
+}
+
+// Browsers block autoplay until a user gesture — play intro music on first interaction
+{ const onFirstInteraction = () => { playIntroMusic(); document.removeEventListener('pointerdown', onFirstInteraction); }; document.addEventListener('pointerdown', onFirstInteraction); }
+
+// ── State ─────────────────────────────────────────────────────────────────
+let carCoords, motoCoords, carCum, motoCum;
+let rafId = null, startTime = null, carDone = false, motoDone = false;
+let camBearing = 0;
+let followMode = 'moto'; // 'moto' | 'car'
+let motoMiniMarker = null, carMiniMarker = null;
+let motoMarker = null, carMarker = null;
+
+// ── GrabMaps init ──────────────────────────────────────────────────────────
+let GrabMapsLib, TrafficBuilder;
+try {
+  ({ default: GrabMapsLib, TrafficBuilder } =
+    await import(`${MAPS_BASE}/assets/js/grabmaps.es.js?v=${Date.now()}`));
+} catch(e) {
+  document.getElementById('race-state').textContent = 'Map load failed: ' + e.message;
+  console.error('GrabMaps import failed:', e);
+  throw e;
+}
+
+const BASE_CONFIG = {
+  baseUrl: MAPS_BASE + '/', apiKey: BM_KEY,
+  buildings: false, labels: true,
+  showContextMenu: false, showLayersMenu: false, showSearchBar: false,
+  routing: null, showWaypointsModal: false,
+  enableGrabbie: false, enableCameraMode: false,
+};
+
+// Main map — chase cam
+const mapInstance = new GrabMapsLib({
+  ...BASE_CONFIG, container: 'map',
+  lat: -6.175, lng: 106.827, zoom: 14,
+  navigation: true, attribution: true, interactive: true,
+  traffic: { updateInterval: 60, useTileLoading: true },
+});
+window.mapInstance = mapInstance;
+
+// Minimap — flat overview, non-interactive
+const minimapInstance = new GrabMapsLib({
+  ...BASE_CONFIG, container: 'minimap',
+  lat: -6.197, lng: 106.814, zoom: 12.2,
+  navigation: false, attribution: false, interactive: false,
+  traffic: null,
+});
+
+const pollMap = inst => new Promise(resolve => {
+  const check = () => { const m = inst.getMap(); if (m) resolve(m); else setTimeout(check, 50); };
+  check();
+});
+
+const [map, minimapMap] = await Promise.all([pollMap(mapInstance), pollMap(minimapInstance)]);
+window.map = map;
+
+// Traffic on main map only
+let trafficInstance = null;
+try {
+  trafficInstance = new TrafficBuilder(mapInstance, map).build();
+  trafficInstance.hide();
+} catch(e) { console.warn('TrafficBuilder:', e); }
+
+// ── Wait for both maps, then init race layers ──────────────────────────────
+// Use a poll loop rather than m.once('load') to avoid missing the event when
+// isStyleLoaded() returns false right before the event fires.
+const waitForStyle = (m) => new Promise(resolve => {
+  const check = () => m.isStyleLoaded() ? resolve() : setTimeout(check, 50);
+  check();
+});
+Promise.all([waitForStyle(map), waitForStyle(minimapMap)]).then(initRace);
+
+function initRace() {
+  carCoords  = decodePolyline6(CAR_POLY);
+  motoCoords = decodePolyline6(MOTO_POLY);
+  carCum  = buildCumDist(carCoords);
+  motoCum = buildCumDist(motoCoords);
+
+  // ── Main map: route lines + video markers ─────────────────────────────
+  addRouteLines(map);
+
+  const makeVideoMarker = (vid) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'vehicle-marker';
+    wrap.appendChild(vid);
+    return wrap;
+  };
+
+  const startCoord = carCoords[0];
+  carMarker  = new maplibregl.Marker({ element: makeVideoMarker(_vidCar),  anchor: 'center' }).setLngLat(startCoord).addTo(map);
+  motoMarker = new maplibregl.Marker({ element: makeVideoMarker(_vidMoto), anchor: 'center' }).setLngLat(startCoord).addTo(map);
+
+  addPin(map, carCoords[0],                  'Monas');
+  addPin(map, carCoords[carCoords.length-1], 'Senayan');
+
+  // ── Minimap: route lines + emoji HTML markers ──────────────────────────
+  addRouteLines(minimapMap);
+  const motoEl = Object.assign(document.createElement('img'), { className: 'mini-vehicle', src: 'images/bike-static.png' });
+  const carEl  = Object.assign(document.createElement('img'), { className: 'mini-vehicle', src: 'images/car-static.png' });
+  motoMiniMarker = new maplibregl.Marker({ element: motoEl, anchor: 'center' }).setLngLat(startCoord).addTo(minimapMap);
+  carMiniMarker  = new maplibregl.Marker({ element: carEl,  anchor: 'center' }).setLngLat(startCoord).addTo(minimapMap);
+}
+
+function addRouteLines(m) {
+  m.addSource('car-src',  { type:'geojson', data: lineFeature(carCoords)  });
+  m.addSource('moto-src', { type:'geojson', data: lineFeature(motoCoords) });
+  m.addLayer({ id:'car-glow',  type:'line', source:'car-src',
+    paint:{ 'line-color':CLR_RED,   'line-width':10, 'line-opacity':0.2, 'line-blur':6 } });
+  m.addLayer({ id:'car-line',  type:'line', source:'car-src',
+    paint:{ 'line-color':CLR_RED,   'line-width':4, 'line-opacity':0.9 } });
+  m.addLayer({ id:'moto-glow', type:'line', source:'moto-src',
+    paint:{ 'line-color':CLR_GREEN, 'line-width':10, 'line-opacity':0.2, 'line-blur':6 } });
+  m.addLayer({ id:'moto-line', type:'line', source:'moto-src',
+    paint:{ 'line-color':CLR_GREEN, 'line-width':4, 'line-opacity':0.9 } });
+}
+
+const POI_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" focusable="false" fill="currentColor" style="flex-shrink:0"><path clip-rule="evenodd" d="M21 11C21 18 13 23 12 23C11 23 3 18 3 11C3 6.02944 7.02944 2 12 2C16.9706 2 21 6.02944 21 11ZM12 14C13.6569 14 15 12.6569 15 11C15 9.34315 13.6569 8 12 8C10.3431 8 9 9.34315 9 11C9 12.6569 10.3431 14 12 14Z" fill-rule="evenodd"/></svg>`;
+
+function addPin(m, coord, label) {
+  const el = document.createElement('div');
+  el.className = 'pin-marker';
+  el.innerHTML = `${POI_SVG}${label}`;
+  new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, -56] }).setLngLat(coord).addTo(m);
+}
+
+// ── Animation ─────────────────────────────────────────────────────────────
+function animate(ts) {
+  if (!startTime) startTime = ts;
+  const elapsed = (ts - startTime) / 1000;
+  const sim = elapsed * SPEEDUP;
+
+  document.getElementById('race-timer').textContent = fmtTime(elapsed);
+  const cp = Math.min(sim / CAR_DURATION,  1);
+  const mp = Math.min(sim / MOTO_DURATION, 1);
+
+  document.getElementById('car-fill').style.width  = (cp*100)+'%';
+  document.getElementById('moto-fill').style.width = (mp*100)+'%';
+  if (!carDone)  document.getElementById('car-status').textContent  = fmtTime(Math.max(0,CAR_DURATION-sim))+' left';
+  if (!motoDone) document.getElementById('moto-status').textContent = fmtTime(Math.max(0,MOTO_DURATION-sim))+' left';
+
+  const motoPos = interpolate(motoCoords, motoCum, mp);
+  const carPos  = interpolate(carCoords,  carCum,  cp);
+
+  // Update main map markers
+  carMarker?.setLngLat(carPos);
+  motoMarker?.setLngLat(motoPos);
+
+  // Update minimap emoji markers and re-center between both vehicles
+  motoMiniMarker?.setLngLat(motoPos);
+  carMiniMarker?.setLngLat(carPos);
+  const miniCenter = [(motoPos[0] + carPos[0]) / 2, (motoPos[1] + carPos[1]) / 2];
+  try { minimapMap.easeTo({ center: miniCenter, duration: 500 }); } catch(e) {}
+
+  // ── Chase cam ────────────────────────────────────────────────────────────
+  const target = followTarget(mp, cp, motoPos, carPos);
+  const lookAheadPos = interpolate(target.coords, target.cum, Math.min(target.p + 0.006, 1));
+  const targetBearing = bearingBetween(target.pos, lookAheadPos);
+  camBearing = lerpAngle(camBearing, targetBearing, 0.08);
+  try { map.easeTo({ center: target.pos, zoom: 16.5, pitch: 55, bearing: camBearing, duration: 0 }); } catch(e) { console.warn('easeTo:', e); }
+
+  if (!motoDone && mp >= 1) {
+    motoDone = true;
+    setPlaceResult('moto', 1, fmtDiff(CAR_DURATION - MOTO_DURATION));
+  }
+  if (!carDone && cp >= 1) {
+    carDone = true;
+    setPlaceResult('car', 2, null);
+    setTimeout(() => {
+      const card = document.getElementById('how-card');
+      card.style.display = 'block';
+      requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('visible')));
+    }, 3000);
+    return;
+  }
+  rafId = requestAnimationFrame(animate);
+}
+
+function followTarget(mp, cp, motoPos, carPos) {
+  if (followMode === 'car') return { pos: carPos,  coords: carCoords,  cum: carCum,  p: cp };
+  return { pos: motoPos, coords: motoCoords, cum: motoCum, p: mp };
+}
+
+function setPlaceResult(who, place, aheadBy) {
+  const row = document.getElementById(who === 'moto' ? 'moto-row' : 'car-row');
+  const statusEl = document.getElementById(who === 'moto' ? 'moto-status' : 'car-status');
+  if (row) row.classList.add('finished');
+  if (place === 1) {
+    statusEl.innerHTML = `<div class="place-label first"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" focusable="false" style="vertical-align:-1px;margin-right:3px"><path clip-rule="evenodd" d="M7 2C5.89543 2 5 2.89543 5 4H3.66667C2.74619 4 2 4.74619 2 5.66667V8C2 9.95999 3.40969 11.5907 5.27048 11.9336C6.02039 14.5483 8.25294 16.5362 11 16.9291V20H9C7.89543 20 7 20.8954 7 22H17C17 20.8954 16.1046 20 15 20H13V16.9291C15.7471 16.5362 17.9796 14.5483 18.7295 11.9336C20.5903 11.5907 22 9.95999 22 8V5.66667C22 4.74619 21.2538 4 20.3333 4H19C19 2.89543 18.1046 2 17 2H7ZM20 8C20 8.74028 19.5978 9.38663 19 9.73244V6H20V8ZM5 9.73244V6H4V8C4 8.74028 4.4022 9.38663 5 9.73244ZM11.5306 6.29009L11.2634 6.82461C11.0602 7.23085 10.7308 7.56025 10.3246 7.76336L9.79009 8.03063C9.4033 8.22402 9.4033 8.77598 9.79009 8.96937L10.3246 9.23664C10.7308 9.43975 11.0602 9.76915 11.2634 10.1754L11.5306 10.7099C11.724 11.0967 12.276 11.0967 12.4694 10.7099L12.7366 10.1754C12.9398 9.76915 13.2692 9.43975 13.6754 9.23664L14.2099 8.96937C14.5967 8.77598 14.5967 8.22402 14.2099 8.03063L13.6754 7.76336C13.2692 7.56025 12.9398 7.23085 12.7366 6.82461L12.4694 6.29009C12.276 5.9033 11.724 5.9033 11.5306 6.29009Z" fill-rule="evenodd"/></svg>1st place</div><div class="place-detail">${aheadBy} ahead</div>`;
+  } else {
+    statusEl.innerHTML = `<div class="place-label">2nd place</div>`;
+  }
+}
+
+// ── Follow mode segmented control ─────────────────────────────────────────
+function setFollowMode(mode) {
+  followMode = mode;
+  ['car','moto'].forEach(m => {
+    document.getElementById('seg-'+m).classList.toggle('active', m === mode);
+  });
+}
+window.setFollowMode = setFollowMode;
+
+function startRace() {
+  if (!carCoords) return;
+  startTime = null; carDone = false; motoDone = false;
+  camBearing = map.getBearing();
+  // Reset vehicle rows to racing state
+  ['moto-row','car-row'].forEach(id => document.getElementById(id)?.classList.remove('finished'));
+  document.getElementById('moto-status').className = 'vehicle-eta';
+  document.getElementById('moto-status').textContent = fmtTime(MOTO_DURATION) + ' left';
+  document.getElementById('car-status').className  = 'vehicle-eta';
+  document.getElementById('car-status').textContent  = fmtTime(CAR_DURATION)  + ' left';
+  const pb = document.getElementById('btn-primary');
+  document.getElementById('btn-primary-label').textContent = 'Reset';
+  document.getElementById('btn-primary-icon').innerHTML = '<path d="M11.9696 2C17.0659 2 21.3612 5.82767 21.9922 10.876C22.0607 11.424 21.672 11.9238 21.124 11.9923C20.576 12.0608 20.0762 11.6721 20.0077 11.124C19.5007 7.06793 16.0486 4 11.9696 4C9.23773 4 6.70612 5.43337 5.30057 7.77597L5.16614 8L7.99994 8C8.55222 8 8.99994 8.44772 8.99994 9C8.99994 9.55229 8.55222 10 7.99994 10H2.99994C2.73472 10 2.48037 9.89464 2.29283 9.70711C2.10529 9.51957 1.99994 9.26522 1.99994 9V4C1.99994 3.44772 2.44765 3 2.99994 3C3.55222 3 3.99994 3.44772 3.99994 4V6.11322C5.82423 3.54554 8.78894 2 11.9696 2Z"/><path d="M12.0303 22C6.93399 22 2.63874 18.1723 2.00771 13.124C1.9392 12.576 2.32793 12.0762 2.87595 12.0077C3.42397 11.9392 3.92376 12.3279 3.99226 12.876C4.49927 16.9321 7.95135 20 12.0303 20C14.7622 20 17.2938 18.5666 18.6994 16.224L18.8338 16H15.9999C15.4477 16 14.9999 15.5523 14.9999 15C14.9999 14.4477 15.4477 14 15.9999 14H20.9999C21.2652 14 21.5195 14.1054 21.707 14.2929C21.8946 14.4804 21.9999 14.7348 21.9999 15V20C21.9999 20.5523 21.5522 21 20.9999 21C20.4477 21 19.9999 20.5523 19.9999 20V17.8869C18.1756 20.4545 15.211 22 12.0303 22Z"/>';
+  pb.classList.add('racing');
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(animate);
+}
+
+function resetRace() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  startTime = null; carDone = false; motoDone = false;
+  if (carCoords) {
+    const startCoord = carCoords[0];
+    carMarker?.setLngLat(startCoord);
+    motoMarker?.setLngLat(startCoord);
+    motoMiniMarker?.setLngLat(startCoord);
+    carMiniMarker?.setLngLat(startCoord);
+  }
+  document.getElementById('car-fill').style.width  = '0%';
+  document.getElementById('moto-fill').style.width = '0%';
+  ['moto-row','car-row'].forEach(id => document.getElementById(id)?.classList.remove('finished'));
+  document.getElementById('moto-status').className = 'vehicle-eta';
+  document.getElementById('moto-status').textContent = '22m 36s';
+  document.getElementById('car-status').className  = 'vehicle-eta';
+  document.getElementById('car-status').textContent  = '31m 06s';
+  document.getElementById('race-timer').textContent  = '00:00';
+  // Show intro overlay again
+  const card = document.getElementById('how-card');
+  card.classList.remove('visible');
+  card.style.display = 'none';
+  document.getElementById('intro-overlay').classList.remove('hidden');
+  playIntroMusic();
+  // Fly main map back to start line
+  map.flyTo({ center: [106.827, -6.175], zoom: 14, pitch: 0, bearing: 0, duration: 1200 });
+}
+
+function toggleHud() {
+  const hud = document.getElementById('hud');
+  hud.classList.toggle('collapsed');
+  const expanded = !hud.classList.contains('collapsed');
+  document.getElementById('hud-chevron-down').style.display = expanded ? 'none' : '';
+  document.getElementById('hud-chevron-up').style.display = expanded ? '' : 'none';
+  if (expanded) { trafficInstance?.show(); } else { trafficInstance?.hide(); }
+}
+window.toggleHud = toggleHud;
+
+function dismissIntro() {
+  document.getElementById('intro-overlay').classList.add('hidden');
+  playRaceMusic();
+  runCountdown();
+}
+window.dismissIntro = dismissIntro;
+
+function runCountdown() {
+  const overlay = document.getElementById('countdown-overlay');
+  const num = document.getElementById('countdown-number');
+  const steps = ['3', '2', '1', 'GO!'];
+  let i = 0;
+  setTimeout(() => {
+  overlay.classList.remove('hidden');
+
+  function showStep() {
+    num.classList.remove('visible');
+    setTimeout(() => {
+      num.textContent = steps[i];
+      num.classList.add('visible');
+      i++;
+      if (i < steps.length) {
+        setTimeout(showStep, 900);
+      } else {
+        setTimeout(() => {
+          num.classList.remove('visible');
+          setTimeout(() => { overlay.classList.add('hidden'); }, 200);
+          // Wait for map + coords to be ready before starting
+          const tryStart = () => {
+            if (carCoords) { startRace(); }
+            else { setTimeout(tryStart, 100); }
+          };
+          tryStart();
+        }, 700);
+      }
+    }, 150);
+  }
+  showStep();
+  }, 2000);
+}
+</script>
+</body>
+</html>

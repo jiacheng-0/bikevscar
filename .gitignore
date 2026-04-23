@@ -1,0 +1,48 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Environment and secrets (API keys, local overrides)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependencies and package managers (if you add Node later)
+node_modules/
+
+# Build / cache output (if you add a bundler later)
+dist/
+build/
+.cache/
+.parcel-cache/
+
+# Editor / IDE (keep team-shared settings by removing lines you commit)
+.idea/
+*.swp
+*.swo
+
+# Cursor / agent tooling (local session data)
+.specstory/
+
+# Optional: local VS Code settings (uncomment if you do not commit .vscode)
+ .vscode/
+ .settings/
+ ./specstory/
+ ./specstory/history/
