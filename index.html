@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🏁 Jakarta Rush Hour Race — Bike vs Car</title>
+  <title>🏁 Singapore Rush Hour Race - Bike vs Car</title>
   <link href="https://maps.grab.com/assets/css/maplibre-gl.css" rel="stylesheet">
   <link href="https://maps.grab.com/assets/css/grabmaps.css" rel="stylesheet">
   <link rel="preload" href="images/car.webm" as="video" type="video/webm">
@@ -324,8 +324,8 @@
     <div id="intro-fade"></div>
     <div id="intro-fade-yellow"></div>
     <div id="intro-content">
-      <h2>Jakarta Rush Hour Race</h2>
-      <p>GrabMaps knows every alleyway. Built from billions of trips by millions of delivery-partners across SEA, our routing sends bikes through shortcuts no other map knows exist — watch the difference in real time.</p>
+      <h2>Singapore Rush Hour Race</h2>
+      <p>From Symphony Suites in Yishun to Grab OneNorth, this simulation compares car and motorbike timing on a cross-island GrabMaps route.</p>
       <button id="btn-start-intro" onclick="dismissIntro()">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" focusable="false"><path d="M9.59 3.06456C7.59185 1.81572 5 3.25225 5 5.60856V18.3916C5 20.7479 7.59185 22.1844 9.59 20.9356L19.8164 14.5441C21.6964 13.3691 21.6964 10.6311 19.8164 9.45607L9.59 3.06456Z"/></svg>
         Start race
@@ -345,23 +345,23 @@
   <div id="hud">
     <div id="hud-header">
       <div>
-        <h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:6px"><path d="M11.5691 4.02994C7.01528 6.30683 5.35101 5.77244 4.72656 5.18401L6.38379 16.4964C7.68418 17.2268 9.20763 18.3379 14.1527 15.7872C17.7099 13.9525 19.6944 14.2146 22.0159 14.4393L20.0019 2.84226C17.6724 2.41986 15.2436 2.1927 11.5691 4.02994Z" fill="#E8FCCF"/><path d="M16.986 14.6432L14.6045 2.87489C16.7098 2.34868 18.3799 2.54814 20.0019 2.84226L22.0159 14.4393C21.9455 14.4325 21.8755 14.4256 21.8057 14.4188C20.2649 14.2683 18.849 14.1299 16.986 14.6432Z" fill="#005339"/><path d="M11.9048 16.7931L9.54866 4.9375C6.49602 6.12968 5.24832 5.67568 4.72656 5.18401L6.38379 16.4964C6.43998 16.528 6.49659 16.5603 6.55388 16.593C7.59609 17.1872 8.86161 17.9086 11.9048 16.7931Z" fill="#005339"/><path d="M20.6279 6.44644C17.6354 6.01298 14.966 6.44798 12.7749 7.57021C10.906 8.52738 7.64728 9.85747 5.32373 9.25995L5.87433 13.0184C8.16142 13.6497 10.3789 13.4457 14.0743 11.7121C16.5688 10.5418 19.3508 10.2868 21.3082 10.364L20.6279 6.44644Z" fill="#005339"/><path d="M20.6279 6.44644C18.7298 6.1715 16.9616 6.24597 15.363 6.6236L16.2337 10.9258C18.0758 10.4242 19.9042 10.3087 21.3082 10.364L20.6279 6.44644Z" fill="#E8FCCF"/><path d="M5.87433 13.0184C7.48054 13.4617 9.0524 13.4931 11.126 12.872L10.2879 8.65483C8.65313 9.24124 6.79974 9.63951 5.32373 9.25995L5.87433 13.0184Z" fill="#E8FCCF"/><path d="M3.8001 5.7999C4.73898 5.7999 5.5001 5.03879 5.5001 4.0999C5.5001 3.16102 4.73898 2.3999 3.8001 2.3999C2.86121 2.3999 2.1001 3.16102 2.1001 4.0999C2.1001 5.03879 2.86121 5.7999 3.8001 5.7999Z" fill="#00BD4C"/><path d="M6.90029 21.7999C6.40029 21.8999 5.80029 21.4999 5.70029 20.9999L3.00029 5.59991C2.90029 5.09991 3.30029 4.59991 3.80029 4.49991C4.40029 4.39991 4.90029 4.69991 5.00029 5.29991L7.70029 20.6999C7.80029 21.1999 7.40029 21.6999 6.90029 21.7999Z" fill="#008244"/></svg>Jakarta Rush Hour Race</h1>
-        <div class="subtitle">Monas → Senayan / GBK</div>
+        <h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" focusable="false" xmlns="http://www.w3.org/2000/svg" style="vertical-align:-3px;margin-right:6px"><path d="M11.5691 4.02994C7.01528 6.30683 5.35101 5.77244 4.72656 5.18401L6.38379 16.4964C7.68418 17.2268 9.20763 18.3379 14.1527 15.7872C17.7099 13.9525 19.6944 14.2146 22.0159 14.4393L20.0019 2.84226C17.6724 2.41986 15.2436 2.1927 11.5691 4.02994Z" fill="#E8FCCF"/><path d="M16.986 14.6432L14.6045 2.87489C16.7098 2.34868 18.3799 2.54814 20.0019 2.84226L22.0159 14.4393C21.9455 14.4325 21.8755 14.4256 21.8057 14.4188C20.2649 14.2683 18.849 14.1299 16.986 14.6432Z" fill="#005339"/><path d="M11.9048 16.7931L9.54866 4.9375C6.49602 6.12968 5.24832 5.67568 4.72656 5.18401L6.38379 16.4964C6.43998 16.528 6.49659 16.5603 6.55388 16.593C7.59609 17.1872 8.86161 17.9086 11.9048 16.7931Z" fill="#005339"/><path d="M20.6279 6.44644C17.6354 6.01298 14.966 6.44798 12.7749 7.57021C10.906 8.52738 7.64728 9.85747 5.32373 9.25995L5.87433 13.0184C8.16142 13.6497 10.3789 13.4457 14.0743 11.7121C16.5688 10.5418 19.3508 10.2868 21.3082 10.364L20.6279 6.44644Z" fill="#005339"/><path d="M20.6279 6.44644C18.7298 6.1715 16.9616 6.24597 15.363 6.6236L16.2337 10.9258C18.0758 10.4242 19.9042 10.3087 21.3082 10.364L20.6279 6.44644Z" fill="#E8FCCF"/><path d="M5.87433 13.0184C7.48054 13.4617 9.0524 13.4931 11.126 12.872L10.2879 8.65483C8.65313 9.24124 6.79974 9.63951 5.32373 9.25995L5.87433 13.0184Z" fill="#E8FCCF"/><path d="M3.8001 5.7999C4.73898 5.7999 5.5001 5.03879 5.5001 4.0999C5.5001 3.16102 4.73898 2.3999 3.8001 2.3999C2.86121 2.3999 2.1001 3.16102 2.1001 4.0999C2.1001 5.03879 2.86121 5.7999 3.8001 5.7999Z" fill="#00BD4C"/><path d="M6.90029 21.7999C6.40029 21.8999 5.80029 21.4999 5.70029 20.9999L3.00029 5.59991C2.90029 5.09991 3.30029 4.59991 3.80029 4.49991C4.40029 4.39991 4.90029 4.69991 5.00029 5.29991L7.70029 20.6999C7.80029 21.1999 7.40029 21.6999 6.90029 21.7999Z" fill="#008244"/></svg>Singapore Rush Hour Race</h1>
+        <div class="subtitle">Symphony Suites -> Grab OneNorth</div>
       </div>
       <button id="hud-toggle" onclick="toggleHud()"><svg id="hud-chevron-down" viewBox="0 0 24 24" width="16" height="16" focusable="false" fill="currentColor"><path clip-rule="evenodd" d="M18.7071 8.29289C18.3166 7.90237 17.6834 7.90237 17.2929 8.29289L12.1414 13.4444C12.0633 13.5225 11.9367 13.5225 11.8586 13.4444L6.70711 8.29289C6.31658 7.90237 5.68342 7.90237 5.29289 8.29289C4.90237 8.68342 4.90237 9.31658 5.29289 9.70711L11.2929 15.7071C11.6834 16.0976 12.3166 16.0976 12.7071 15.7071L18.7071 9.70711C19.0976 9.31658 19.0976 8.68342 18.7071 8.29289Z" fill-rule="evenodd"/></svg><svg id="hud-chevron-up" viewBox="0 0 24 24" width="16" height="16" focusable="false" fill="currentColor" style="display:none"><path clip-rule="evenodd" d="M18.7071 15.7071C18.3166 16.0976 17.6834 16.0976 17.2929 15.7071L12.1414 10.5556C12.0633 10.4775 11.9367 10.4775 11.8586 10.5556L6.70711 15.7071C6.31658 16.0976 5.68342 16.0976 5.29289 15.7071C4.90237 15.3166 4.90237 14.6834 5.29289 14.2929L11.2929 8.29289C11.6834 7.90237 12.3166 7.90237 12.7071 8.29289L18.7071 14.2929C19.0976 14.6834 19.0976 15.3166 18.7071 15.7071Z" fill-rule="evenodd"/></svg></button>
     </div>
     <div id="hud-body">
       <div class="vehicle-row" id="moto-row">
         <div class="vehicle-header">
-          <div class="vehicle-name"><span>Motorbike</span> <span class="dist-label">10.4 km</span></div>
-          <div id="moto-status" class="vehicle-eta">22m 36s</div>
+          <div class="vehicle-name"><span>Motorbike</span> <span class="dist-label">26.9 km</span></div>
+          <div id="moto-status" class="vehicle-eta">34m 53s</div>
         </div>
         <div class="progress-track"><div class="progress-fill" id="moto-fill"></div></div>
       </div>
       <div class="vehicle-row" id="car-row">
         <div class="vehicle-header">
-          <div class="vehicle-name"><span>Car</span> <span class="dist-label">10.9 km</span></div>
-          <div id="car-status" class="vehicle-eta">31m 06s</div>
+          <div class="vehicle-name"><span>Car</span> <span class="dist-label">26.9 km</span></div>
+          <div id="car-status" class="vehicle-eta">31m 44s</div>
         </div>
         <div class="progress-track"><div class="progress-fill" id="car-fill"></div></div>
       </div>
@@ -432,12 +432,19 @@ document.getElementById('btn-primary').addEventListener('click', () => {
   resetRace();
 });
 
-const CAR_DURATION  = 1865.7;
-const MOTO_DURATION = 1355.5;
+const CAR_DURATION  = 1903.5;
+const MOTO_DURATION = 2092.9;
 const SPEEDUP = 45;
 
-const CAR_POLY  = '|p|wJgmkwjE|U\\EmI_IV}VjAqOlAuK~@iPxAe@As@IkDqA_G{BqFmCaCkAuBaAqEgBoFhA}KhC}GpAu@jDkC`JeA`Ee@tBuGbVwAfDmBnCwBbBaClAwCz@_CXcBDkEEcC]wRyCyQoCeDWoCG_CJmBb@gB|@yAxAsBhCkArBy@zBc@rBYbCQbDUt}@?zNAzJC~RAbBYzpAE~EGpdBDdL]hKwA`IqDvRSvDKjC]lIU`Dm@zKW|BSbCd@hZNnFx@jDhApAxBt@vC?fDe@`VgDxOsB`Hg@zAHdFHjKn@fHnAdHlAjF|@bB`@`MnCnPrEbBrBlJlC`Cv@hEnA|Bn@tRxFjGvBpItClDxAxL`FpHzCzAl@pGjCvEtBzBz@fS~HdEdBtBGn@Zx[nOhAxBtEbCbEtBdNfHtB`ApJdFdAj@rCvAfDdBpGdDrDlBnTtKrMjHjCvAbLxFfAh@hU|KhLhFtFpClCFb^xR`@P~^hQpAhCdHpDpCbBjM~HtVjLjKjE~DvArPrI`D~A`CpA`Af@TJ`DfBfCtAj@Xd@V|At@pDhBzEbCjAl@~EdCvCxApIhEtDlBdCnA`D~A~FxCnDhBpDhBlL~FdFhC^Pd@VhCpAtMxGxCzAbErBnCjA|DnBjDbDfCnBvDfDl@dAVnA@bBGvBOzBi@bCoAzBkB|AkCdBwCnAa_@vKe[|JaYtI}H`CgE~D}BxCiB|Ck@pDWlEVxBfMtPxAlBvAjBjKjNz@jAbA`CnB|Cxb@`g@tMnO~{@|nA`cAl|ArKbO`GtJnCnFtBzCjA`BnFhHbFnHpCpDrJjMnHpIhFhEdKjGpFjDbFlCfD|@fDd@|j@|G`Jl@dBXzAj@`B`BpAxAv@tAVbA`@lBRlGEvF@zi@l@x_@h@`XhAla@x@l\\l@`SJnDRxCt@vg@`@n`@p@hS~B|Pf@rEPnCDrE@jD?vAIxICzBBlOl@`TdBjr@l@vPD|BtAfIHlED|AHxCL|DZpNh@~LdAj_@|AdB`A`Bn@h@bAv@dAZ~AVlDGvDE|NIhEC|KIxHEtRUfHKnUa@rMQ`QIzDEfQYzCEpVSpFGjRObFGjBArDC`FMdEfAbCZzZk@lp@kDbXkC~b@uDdLKbEEj_@yGtf@aKv|@}Pb[mK|e@cP~KqDdo@eVpg@kRvUyI`E_Bp]eNbToIn\\gMfg@oR|i@sSbTeInLyFxRuKzRuK~\\iTlQ_O`QuNpQaObUcRzVwSnOiMtUcRpTwP`ImL|x@qv@bIgKfLqJdTuOtY{Oj@Y`l@qZvPqKdLwHjJaK`QyUjAeGEeDq@cCiA_B}Aq@{BWiCZ}BdAyBnBqAjCu@jCEjCDvCd@rDbO`m@nFdW~Mr{@rE~^pCtPxAbJzC|QtCpRtOzdAf@hDv@hFxAvJVhBpC~Q|Up|A~QllAzBfNlDtTd@tCdCrOfApCfBbClB~A`Bp@fCb@vBHlHJnP{@xLk@lD[xBKdc@_Bh^k@pNUlS]bOKpgBdBbHHhNd@lLi@rDFnQTbRBjCe@dBmA`B{BvBcEzDuMxEmP}DK}iAdCsITyEvBoIlC{^M{GI?aCvGFxIBBwKNgw@D_FVih@v@oA??';
-const MOTO_POLY = 'l{wwJa{iwjEwBbBaClAwCz@_CXcBDkEEcC]wRyCyQoCeDWoCG_CJmBb@gB|@yAxAsBhCkArBy@zBc@rBYbCQbDUt}@?zNAzJC~RAbBYzpAE~EGpdBDdL]hKwA`IqDvRSvDKjC]lIU`Dm@zKW|BSbCd@hZNnFx@jDhApAxBt@vC?fDe@`VgDxOsB`Hg@zAHdFHjKn@fHnAdHlAjF|@bB`@`MnCnPrEbBrBlJlC`Cv@hEnA|Bn@tRxFjGvBpItClDxAxL`FpHzCzAl@pGjCvEtBzBz@fS~HdEdBtBGn@Zx[nOhAxBtEbCbEtBdNfHtB`ApJdFdAj@rCvAfDdBpGdDrDlBnTtKrMjHjCvAbLxFfAh@hU|KhLhFtFpClCFb^xR`@P~^hQpAhCdHpDpCbBjM~HtVjLjKjE~DvArPrI`D~A`CpA`Af@TJ`DfBfCtAj@Xd@V|At@pDhBzEbCjAl@~EdCvCxApIhEtDlBdCnA`D~A~FxCnDhBpDhBlL~FdFhC^Pd@VhCpAtMxGxCzAbErBnCjA|DnBjDbDfCnBvDfDl@dAVnA@bBGvBOzBi@bCoAzBkB|AkCdBwCnAa_@vKe[|JaYtI}H`CgE~D}BxCiB|Ck@pDWlEVxBfMtPxAlBvAjBjKjNz@jAbA`CnB|Cxb@`g@tMnO~{@|nA`cAl|ArKbO`GtJnCnFtBzCjA`BnFhHbFnHpCpDrJjMnHpIhFhEdKjGpFjDbFlCfD|@fDd@|j@|G`Jl@dBXzAj@`B`BpAxAv@tAVbA`@lBRlGEvF@zi@l@x_@h@`XhAla@x@l\\l@`SJnDRxCt@vg@`@n`@p@hS~B|Pf@rEPnCDrE@jD?vAIxICzBBlOl@`TdBjr@l@vPD|BtAfIHlED|AHxCL|DZpNh@~LdAj_@|AdB`A`Bn@h@bAv@dAZ~AVlDGvDE|NIhEC|KIxHEtRUfHKnUa@rMQ`QIzDEfQYzCEpVSpFGjRObFGjBArDC`FM`T}AtRwArUcBxFc@zRoBdFi@zAM|BQvI{@d@A~Ks@b_@kExBW`AKzKyAnEu@`MmB`QuBz[eGvDu@`g@oLrNqEzV}HfBk@|McFnPaGl[yJ~Ao@lQyGtHuClJaE~EmB`A_@fIkDpTwIzOmGxKaEtEmBbC_AvDsAx@[vBy@dsAgg@z`@kO|Am@tTiJpQsIdUyL`B{@tO_InKoIbIqHxI_JxE{EtI{HhC_Cp[_VzFaE~BgBdDcB`GsDlGeEpXyTlQ_Nv`@iZnc@}`@fg@_`@fLqJdTuOtY{Oj@Y`l@qZvPqKdLwHjJaK`QyUjAeGEeDq@cCiA_B}Aq@{BWiCZ}BdAyBnBqAjCu@jCEjCDvCd@rDbO`m@nFdW~Mr{@rE~^pCtPxAbJzC|QtCpRtOzdAf@hDv@hFxAvJVhBpC~Q|Up|A~QllAzBfNlDtTd@tCdCrOfApCfBbClB~A`Bp@fCb@vBHlHJnP{@xLk@lD[xBKdc@_Bh^k@pNUlS]bOKpgBdBbHHhNd@lLi@rDFnQTbRBjCe@dBmA`B{BvBcEzDuMxEmP}DK}iAdCsITyEvBoIlC{^M{GI?aCvGFxIBBwKNgw@D_FVih@v@oA??';
+const ROUTE_START = [103.84477896796983, 1.4349448873426383];
+const ROUTE_DEST = [103.79323336138137, 1.291826895879796];
+const MINI_CENTER = [
+  (ROUTE_START[0] + ROUTE_DEST[0]) / 2,
+  (ROUTE_START[1] + ROUTE_DEST[1]) / 2,
+];
+
+const CAR_POLY = "alpvAumcaeEpGsFrM_Lb@_@pJ{InCiCvM_MhBeBxHmFdD{DjBiDnB_GfAsGc@gp@l@uGxAiGjBcFlD{FvEyFrH_I`EqEzCqDfm@gq@~IkKhFgG~KcMxRkTlHqIxCcDnDgC~CoBnCiAbIuBtFy@dLYjIKpKMxH{BxBeBtAqEvAcFb@u[t@{FzAwFpCsFvK{MtMoN~A}GRwCM_F[kBcQoPgQ}PiHmGkBaBmEoE~BmCbAmAlZy]l]ij@hYki@bQe\\dAeBhEiGfHmH|MaKl`@sUbVcMd@WbDwB~P{MrGyGvHwLhHwQpB{FbN}_@vkAwbDxa@_iAly@e{B~HcUpLeSxAkC`ByAlBShNvJnQtJhg@~Udh@vWxQjJtNrHlEzBjU|KhWjLpVjJfYnIfVdFlVtDfZjCvZlAnQVjQ[fb@wAxZeEdWoDvBUp`@kEl[wAxUQpX`@nOz@rTlBr]tF|VrFxVbIlPhHvWvNxJxG|EbDjXdUpPhQ`V~Xb[jc@lMpT|MzUtC~EhTl[paAlaBbXv_@hRtNhO|JfNvGnM|ErAf@nOjDzLjBnOtA|NNpMAfR_A|SqCjVgG~SiIpUgNjFeDtHkFpo@{j@|w@cr@`L}HpM{FxNsDhIk@pHQhR`@dHr@dHdAjIrAdHnBjFt@bP~A|DDpCBhFGhV_CxNkDnE]xPmGpPmGnG{A|NuBnLqAdKUjGEzD^vDfAxhBcHvZ{@xrC}Gdg@mA`aBaCbyAmAr_AQpu@y@vu@QxaCp@zFBtiCp@|v@?rn@aB~a@yApRkBtS_C~WoDjbAwRxw@gQnu@wVdkBqq@|_@eJ`\\kGdYgDfWuBrRo@nZUfV`@fT|@vTtBbUvDrUtEhUtFfUxE`OxCtpE|kAvk@jNtnCxr@x~A~_@dLjCd]`JfUtEjQlCbS`Bfh@xDlz@tA`cBcHvnAaVht@{Ov{Am`@`NaDvo@kOxiAeZpMyC`Im@bb@uKvo@gS`h@_NjR}Ch{Cyu@vfAiYdtAw^jYkFp_@uFt_@qDdDSdEQpe@cAvYi@l]u@lUk@|~@Yzq@kAdQc@tj@mA`LGfhBeClkBCf]bAhNd@|ZdE|X|Enw@~Ux_@bTpP`L~YtWfLpLhg@rj@rNvO`g@|i@`[|\\dHxHfHzHnNbOjGhGlQzMhiA|~@bBtA~FrFlThTjUjWrS|Wxo@reA~JnPnJbQ`Xlv@~Uxn@~^naA`Ld\\bHrS~l@nfBn@xApDvI`KpSbS~[`QbTtMnNlVlUly@vg@vCtA~@^zEnBbCbAfDrAfCdAfBt@`DjA|R`IvJ|CnQjErVxD`eAhNhRfDlZlHdUxHj_@lRhOtKdR|Qp[n^tKvN`f@d|@lNlSjQvSvg@~a@~OjI|Q~FtTrF~KrAbU`BvP~@|Tw@d[}DbLaCzOkErXgNnHyE`J_Hnb@ej@rGsH|NuP~`@_f@nFcH~LeOxUwObUaGdc@uEpb@aAbW?fo@jDza@jBde@aEn`@mPrj@aSxu@}Jpj@}B~_@L~YtExYpJ`q@hVrj@bWndA~b@~w@z^fSpKjQdK`n@xb@t_@t]jHvI~E|GdMfTfD`GrE`K~M|YpPzZtSj^`FxHdU`YhH|HbI|FrPfKbWrMzUfLzSbM`K`I`JtJjKlNnIfPjFjO`FnQtM|f@|Tlx@`Vr|@dKbXtEbKnBvDpJ|SzPl[f^vg@jPlTbNvNzHxHzRxPbS|OfRhMbTzMfOrIfLdIpKdJdOfS|H|PjEtNjDzO~AlTGnUiGz`@kB`I{BzGyTpi@_Orc@_GfO_D|KuHz[wDnTmA`L}AlVm@tMq@hf@m@`T_@bNcFze@sBtPaVfx@ga@xv@}OtYyMhU_FnImOnZgcAnlB_I~O}N`ZmU`o@uNbf@sLjl@mIxk@cFzm@qBln@oFhvBc@zPsF`wBkNfxFoDhq@cFx^sJxa@}Oj`@eUfc@qPtWeXnd@ay@nuAaJpR_HnMic@baA?~BKzAmHtScOd_@oCtGmCpGeBdEeLzVaGbKoFlImJhMiBxBkAbBmA~Ak@g@gCyBeUiTEE_Ay@sRcQoD_EiPyQmSc^{EcEqDsEgCkEeC{CW[sCsCuCgAwCY}CUgEXeF|AyZzRm\\fa@aSlS_B|Fk@fFDh@LhCv@|Cfu@rn@xCr@lAOnAk@v@{@vMyNmAuA}A{A}KqKm@YuCeAeSsPs@k@IDQDQ?QEOKIKCO?I?EBOFMJKNENAN@LDLLHN@RCPv@j@xCdC";
+const MOTO_POLY = CAR_POLY;
 
 // ── Polyline6 decoder ──────────────────────────────────────────────────────
 function decodePolyline6(encoded) {
@@ -473,8 +480,12 @@ function interpolate(coords, cum, progress) {
 function fmtTime(s) {
   return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 }
+function fmtDuration(s) {
+  const total = Math.round(s);
+  return `${Math.floor(total/60)}m ${String(total%60).padStart(2,'0')}s`;
+}
 function fmtDiff(s) {
-  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  const m = Math.floor(Math.abs(s)/60), sec = Math.floor(Math.abs(s)%60);
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
 }
 function ptFeature(c)  { return { type:'Feature', geometry:{ type:'Point',      coordinates:c } }; }
@@ -551,7 +562,7 @@ const BASE_CONFIG = {
 // Main map — chase cam
 const mapInstance = new GrabMapsLib({
   ...BASE_CONFIG, container: 'map',
-  lat: -6.175, lng: 106.827, zoom: 14,
+  lat: ROUTE_START[1], lng: ROUTE_START[0], zoom: 13,
   navigation: true, attribution: true, interactive: true,
   traffic: { updateInterval: 60, useTileLoading: true },
 });
@@ -560,7 +571,7 @@ window.mapInstance = mapInstance;
 // Minimap — flat overview, non-interactive
 const minimapInstance = new GrabMapsLib({
   ...BASE_CONFIG, container: 'minimap',
-  lat: -6.197, lng: 106.814, zoom: 12.2,
+  lat: MINI_CENTER[1], lng: MINI_CENTER[0], zoom: 10.8,
   navigation: false, attribution: false, interactive: false,
   traffic: null,
 });
@@ -609,8 +620,8 @@ function initRace() {
   carMarker  = new maplibregl.Marker({ element: makeVideoMarker(_vidCar),  anchor: 'center' }).setLngLat(startCoord).addTo(map);
   motoMarker = new maplibregl.Marker({ element: makeVideoMarker(_vidMoto), anchor: 'center' }).setLngLat(startCoord).addTo(map);
 
-  addPin(map, carCoords[0],                  'Monas');
-  addPin(map, carCoords[carCoords.length-1], 'Senayan');
+  addPin(map, carCoords[0],                  'Symphony Suites');
+  addPin(map, carCoords[carCoords.length-1], 'Grab OneNorth');
 
   // ── Minimap: route lines + emoji HTML markers ──────────────────────────
   addRouteLines(minimapMap);
@@ -677,13 +688,21 @@ function animate(ts) {
   camBearing = lerpAngle(camBearing, targetBearing, 0.08);
   try { map.easeTo({ center: target.pos, zoom: 16.5, pitch: 55, bearing: camBearing, duration: 0 }); } catch(e) { console.warn('easeTo:', e); }
 
-  if (!motoDone && mp >= 1) {
-    motoDone = true;
-    setPlaceResult('moto', 1, fmtDiff(CAR_DURATION - MOTO_DURATION));
+  const motoFinishedNow = !motoDone && mp >= 1;
+  const carFinishedNow = !carDone && cp >= 1;
+  if (motoFinishedNow && carFinishedNow) {
+    if (MOTO_DURATION <= CAR_DURATION) {
+      markFinished('moto');
+      markFinished('car');
+    } else {
+      markFinished('car');
+      markFinished('moto');
+    }
+  } else {
+    if (motoFinishedNow) markFinished('moto');
+    if (carFinishedNow) markFinished('car');
   }
-  if (!carDone && cp >= 1) {
-    carDone = true;
-    setPlaceResult('car', 2, null);
+  if (motoDone && carDone) {
     setTimeout(() => {
       const card = document.getElementById('how-card');
       card.style.display = 'block';
@@ -692,6 +711,15 @@ function animate(ts) {
     return;
   }
   rafId = requestAnimationFrame(animate);
+}
+
+function markFinished(who) {
+  const isMoto = who === 'moto';
+  const duration = isMoto ? MOTO_DURATION : CAR_DURATION;
+  const otherDuration = isMoto ? CAR_DURATION : MOTO_DURATION;
+  const first = !motoDone && !carDone;
+  if (isMoto) motoDone = true; else carDone = true;
+  setPlaceResult(who, first ? 1 : 2, first ? fmtDiff(otherDuration - duration) : null);
 }
 
 function followTarget(mp, cp, motoPos, carPos) {
@@ -726,9 +754,9 @@ function startRace() {
   // Reset vehicle rows to racing state
   ['moto-row','car-row'].forEach(id => document.getElementById(id)?.classList.remove('finished'));
   document.getElementById('moto-status').className = 'vehicle-eta';
-  document.getElementById('moto-status').textContent = fmtTime(MOTO_DURATION) + ' left';
+  document.getElementById('moto-status').textContent = fmtDuration(MOTO_DURATION);
   document.getElementById('car-status').className  = 'vehicle-eta';
-  document.getElementById('car-status').textContent  = fmtTime(CAR_DURATION)  + ' left';
+  document.getElementById('car-status').textContent  = fmtDuration(CAR_DURATION);
   const pb = document.getElementById('btn-primary');
   document.getElementById('btn-primary-label').textContent = 'Reset';
   document.getElementById('btn-primary-icon').innerHTML = '<path d="M11.9696 2C17.0659 2 21.3612 5.82767 21.9922 10.876C22.0607 11.424 21.672 11.9238 21.124 11.9923C20.576 12.0608 20.0762 11.6721 20.0077 11.124C19.5007 7.06793 16.0486 4 11.9696 4C9.23773 4 6.70612 5.43337 5.30057 7.77597L5.16614 8L7.99994 8C8.55222 8 8.99994 8.44772 8.99994 9C8.99994 9.55229 8.55222 10 7.99994 10H2.99994C2.73472 10 2.48037 9.89464 2.29283 9.70711C2.10529 9.51957 1.99994 9.26522 1.99994 9V4C1.99994 3.44772 2.44765 3 2.99994 3C3.55222 3 3.99994 3.44772 3.99994 4V6.11322C5.82423 3.54554 8.78894 2 11.9696 2Z"/><path d="M12.0303 22C6.93399 22 2.63874 18.1723 2.00771 13.124C1.9392 12.576 2.32793 12.0762 2.87595 12.0077C3.42397 11.9392 3.92376 12.3279 3.99226 12.876C4.49927 16.9321 7.95135 20 12.0303 20C14.7622 20 17.2938 18.5666 18.6994 16.224L18.8338 16H15.9999C15.4477 16 14.9999 15.5523 14.9999 15C14.9999 14.4477 15.4477 14 15.9999 14H20.9999C21.2652 14 21.5195 14.1054 21.707 14.2929C21.8946 14.4804 21.9999 14.7348 21.9999 15V20C21.9999 20.5523 21.5522 21 20.9999 21C20.4477 21 19.9999 20.5523 19.9999 20V17.8869C18.1756 20.4545 15.211 22 12.0303 22Z"/>';
@@ -751,9 +779,9 @@ function resetRace() {
   document.getElementById('moto-fill').style.width = '0%';
   ['moto-row','car-row'].forEach(id => document.getElementById(id)?.classList.remove('finished'));
   document.getElementById('moto-status').className = 'vehicle-eta';
-  document.getElementById('moto-status').textContent = '22m 36s';
+  document.getElementById('moto-status').textContent = fmtDuration(MOTO_DURATION);
   document.getElementById('car-status').className  = 'vehicle-eta';
-  document.getElementById('car-status').textContent  = '31m 06s';
+  document.getElementById('car-status').textContent  = fmtDuration(CAR_DURATION);
   document.getElementById('race-timer').textContent  = '00:00';
   // Show intro overlay again
   const card = document.getElementById('how-card');
@@ -762,7 +790,7 @@ function resetRace() {
   document.getElementById('intro-overlay').classList.remove('hidden');
   playIntroMusic();
   // Fly main map back to start line
-  map.flyTo({ center: [106.827, -6.175], zoom: 14, pitch: 0, bearing: 0, duration: 1200 });
+  map.flyTo({ center: ROUTE_START, zoom: 13, pitch: 0, bearing: 0, duration: 1200 });
 }
 
 function toggleHud() {
